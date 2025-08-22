@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Development MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: chat-mysql-dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: chat_app_dev
+      MYSQL_USER: chat_user
+      MYSQL_PASSWORD: chat_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+    networks:
+      - chat-dev-network
+
+  # Development Redis
+  redis:
+    image: redis:7-alpine
+    container_name: chat-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - chat-dev-network
+
+  # Development RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: chat-rabbitmq-dev
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: chat_user
+      RABBITMQ_DEFAULT_PASS: chat_password
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    volumes:
+      - rabbitmq_dev_data:/var/lib/rabbitmq
+    networks:
+      - chat-dev-network
+
+volumes:
+  mysql_dev_data:
+  redis_dev_data:
+  rabbitmq_dev_data:
+
+networks:
+  chat-dev-network:
+    driver: bridge

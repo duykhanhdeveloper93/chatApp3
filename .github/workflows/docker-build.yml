@@ -1,0 +1,42 @@
+name: Docker Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build Backend Docker Image
+      run: |
+        cd backend
+        docker build -t chat-backend:test .
+    
+    - name: Test Backend Container
+      run: |
+        docker run --rm -d --name test-backend -p 3001:3000 chat-backend:test
+        sleep 10
+        docker logs test-backend
+        docker stop test-backend
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build Frontend Docker Image
+      run: |
+        cd frontend
+        docker build -t chat-frontend:test .
+    
+    - name: Test Frontend Container
+      run: |
+        docker run --rm -d --name test-frontend -p 8001:80 chat-frontend:test
+        sleep 5
+        curl -f http://localhost:8001 || exit 1
+        docker stop test-frontend

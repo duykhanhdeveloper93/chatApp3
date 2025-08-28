@@ -6,12 +6,13 @@ import { v4 as uuidv4 } from "uuid"
 
 import type { UsersService } from "../users/users.service"
 import type { RedisService } from "../common/config/redis.config"
-import type { User } from "../database/entities/user.entity"
+import { User } from "../database/entities/user.entity"
 import type { RegisterDto } from "./dto/register.dto"
 import type { LoginDto } from "./dto/login.dto"
 import type { RefreshTokenDto } from "./dto/refresh-token.dto"
 import type { ForgotPasswordDto } from "./dto/forgot-password.dto"
 import type { ResetPasswordDto } from "./dto/reset-password.dto"
+import { InjectRepository } from "@nestjs/typeorm"
 
 export interface JwtPayload {
   sub: string
@@ -28,15 +29,16 @@ export interface AuthResponse {
 
 @Injectable()
 export class AuthService {
-  private usersRepository: Repository<User>
-
+ 
   constructor(
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
     private redisService: RedisService,
   ) {
-    this.usersRepository = new Repository<User>()
+    
   }
 
   async validateUser(email: string, password: string): Promise<User | null> {

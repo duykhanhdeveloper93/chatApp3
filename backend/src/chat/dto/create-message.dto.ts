@@ -3,6 +3,10 @@ import { Type } from "class-transformer"
 import { MessageType } from "../../database/entities/message.entity"
 
 class MessageAttachmentDto {
+
+   @IsString()
+  id: string
+
   @IsString()
   filename: string
 

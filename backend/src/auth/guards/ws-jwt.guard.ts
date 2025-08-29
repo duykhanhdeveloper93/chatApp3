@@ -1,6 +1,6 @@
 import { Injectable, type CanActivate, type ExecutionContext } from "@nestjs/common"
-import type { JwtService } from "@nestjs/jwt"
-import type { ConfigService } from "@nestjs/config"
+import { JwtService } from "@nestjs/jwt"
+import { ConfigService } from "@nestjs/config"
 import { WsException } from "@nestjs/websockets"
 
 @Injectable()

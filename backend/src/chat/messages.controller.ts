@@ -1,11 +1,11 @@
 import { Controller, Get, Post, Patch, Param, Delete, UseGuards, ParseUUIDPipe } from "@nestjs/common"
-import type { MessagesService } from "./messages.service"
-import type { CreateMessageDto } from "./dto/create-message.dto"
-import type { UpdateMessageDto } from "./dto/update-message.dto"
+import { MessagesService } from "./messages.service"
+import { CreateMessageDto } from "./dto/create-message.dto"
+import { UpdateMessageDto } from "./dto/update-message.dto"
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard"
 import { PermissionsGuard } from "../auth/guards/permissions.guard"
 import { RequirePermissions } from "../auth/decorators/permissions.decorator"
-import type { Request } from "express"
+import { Request } from "express"
 
 @Controller("messages")
 @UseGuards(JwtAuthGuard, PermissionsGuard)

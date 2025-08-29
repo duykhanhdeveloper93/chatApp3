@@ -1,13 +1,13 @@
 import { Controller, Post, UseGuards, HttpCode, HttpStatus } from "@nestjs/common"
 import { Throttle } from "@nestjs/throttler"
 
-import type { AuthService } from "./auth.service"
+import { AuthService } from "./auth.service"
 import { JwtAuthGuard } from "./guards/jwt-auth.guard"
-import type { RegisterDto } from "./dto/register.dto"
-import type { LoginDto } from "./dto/login.dto"
-import type { RefreshTokenDto } from "./dto/refresh-token.dto"
-import type { ForgotPasswordDto } from "./dto/forgot-password.dto"
-import type { ResetPasswordDto } from "./dto/reset-password.dto"
+import { RegisterDto } from "./dto/register.dto"
+import { LoginDto } from "./dto/login.dto"
+import { RefreshTokenDto } from "./dto/refresh-token.dto"
+import { ForgotPasswordDto } from "./dto/forgot-password.dto"
+import { ResetPasswordDto } from "./dto/reset-password.dto"
 
 @Controller("auth")
 export class AuthController {

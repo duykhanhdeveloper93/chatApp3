@@ -1,12 +1,15 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
 import type { Repository } from "typeorm"
-import type { Permission } from "../database/entities/permission.entity"
+import { Permission } from "../database/entities/permission.entity"
 import type { CreatePermissionDto } from "./dto/create-permission.dto"
 import type { UpdatePermissionDto } from "./dto/update-permission.dto"
+import { InjectRepository } from "@nestjs/typeorm"
 
 @Injectable()
 export class PermissionsService {
-  constructor(private permissionsRepository: Repository<Permission>) {}
+  constructor(
+    @InjectRepository(Permission)
+    private readonly permissionsRepository: Repository<Permission>) {}
 
   async create(createPermissionDto: CreatePermissionDto): Promise<Permission> {
     const permission = this.permissionsRepository.create(createPermissionDto)

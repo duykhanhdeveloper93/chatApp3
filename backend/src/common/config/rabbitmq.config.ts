@@ -1,6 +1,7 @@
 import { Injectable, type OnModuleInit, type OnModuleDestroy } from "@nestjs/common"
 import  { ConfigService } from "@nestjs/config"
-import amqp, { Connection, Channel } from "amqplib"
+import * as amqp from "amqplib"
+import { Connection, Channel } from "amqplib"
 
 @Injectable()
 export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
@@ -12,7 +13,16 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     try {
-      this.connection = await amqp.connect(this.configService.get("RABBITMQ_URL") || "amqp://localhost:5672")
+
+      const user = this.configService.get<string>("RABBITMQ_DEFAULT_USER")
+      const pass = this.configService.get<string> ("RABBITMQ_DEFAULT_PASS")
+      const host = this.configService.get<string> ("RABBITMQ_HOST")
+      const port = this.configService.get<string> ("RABBITMQ_PORT")
+
+      const url = `amqp://${user}:${pass}@${host}:${port}`;
+      console.log(url)
+
+      this.connection = await amqp.connect(url || "amqp://localhost:5672")
       this.channel = await this.connection.createChannel()
 
       // Declare exchanges and queues

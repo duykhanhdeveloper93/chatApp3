@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core"
 import { io, type Socket } from "socket.io-client"
 import { Observable, BehaviorSubject } from "rxjs"
-import type { AuthService } from "./auth.service"
+import  { AuthService } from "./auth.service"
 
 export interface Message {
   id: string

@@ -5,6 +5,8 @@ import {
   type OnGatewayConnection,
   type OnGatewayDisconnect,
   WebSocketServer,
+  ConnectedSocket,
+  MessageBody,
 } from "@nestjs/websockets"
 import { UseGuards, Logger } from "@nestjs/common"
 import { Server, Socket } from "socket.io"
@@ -109,7 +111,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @UseGuards(WsJwtGuard)
   @SubscribeMessage("join:room")
-  async handleJoinRoom(joinRoomDto: JoinRoomDto, client: AuthenticatedSocket) {
+  async handleJoinRoom( @MessageBody() joinRoomDto: JoinRoomDto,
+                        @ConnectedSocket() client: AuthenticatedSocket) {
     try {
       const { chatRoomId } = joinRoomDto
 
@@ -157,7 +160,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @UseGuards(WsJwtGuard)
   @SubscribeMessage("send:message")
-  async handleSendMessage(createMessageDto: CreateMessageDto, client: AuthenticatedSocket) {
+  async handleSendMessage(@MessageBody() createMessageDto: CreateMessageDto,@ConnectedSocket() client: AuthenticatedSocket) {
     try {
       const message = await this.messagesService.createMessage(createMessageDto, client.user.id)
 

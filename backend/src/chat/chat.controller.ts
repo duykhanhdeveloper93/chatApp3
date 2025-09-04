@@ -10,6 +10,7 @@ import {
   Query,
   ParseUUIDPipe,
   ParseIntPipe,
+  Body,
 } from "@nestjs/common"
 import { ChatService } from "./chat.service"
 import { CreateChatRoomDto } from "./dto/create-chat-room.dto"
@@ -27,7 +28,7 @@ export class ChatController {
 
   @Post("rooms")
   @RequirePermissions("chat", "create")
-  createChatRoom(createChatRoomDto: CreateChatRoomDto, @Request() req) {
+  createChatRoom(@Body() createChatRoomDto: CreateChatRoomDto, @Request() req) {
     return this.chatService.createChatRoom(createChatRoomDto, req.user.id)
   }
 

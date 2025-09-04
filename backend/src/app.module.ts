@@ -54,7 +54,6 @@ import { PermissionsModule } from "./permissions/permissions.module"
 
     // Common module with Redis and RabbitMQ
     CommonModule,
-
     // Feature modules
     AuthModule,
     UsersModule,

@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, HttpCode, HttpStatus } from "@nestjs/common"
+import { Controller, Post, UseGuards, HttpCode, HttpStatus, Body, Request } from "@nestjs/common"
 import { Throttle } from "@nestjs/throttler"
 
 import { AuthService } from "./auth.service"
@@ -15,14 +15,14 @@ export class AuthController {
 
   @Post("register")
   @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 requests per minute
-  async register(registerDto: RegisterDto) {
+  async register(@Body() registerDto: RegisterDto) {
     return await this.authService.register(registerDto)
   }
 
   @Post("login")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
-  async login(loginDto: LoginDto) {
+  async login(@Body() loginDto: LoginDto) {
     return await this.authService.login(loginDto)
   }
 
@@ -55,7 +55,7 @@ export class AuthController {
 
   @Post("profile")
   @UseGuards(JwtAuthGuard)
-  getProfile(req) {
+  getProfile(@Request() req) {
     return req.user
   }
 }

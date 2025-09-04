@@ -1,0 +1,24 @@
+<div class="chat-container">
+  <!-- Danh sách tin nhắn -->
+  <div class="messages">
+    <div
+      *ngFor="let msg of messages"
+      class="message"
+      [ngClass]="{ 'me': msg.sender === currentUser, 'other': msg.sender !== currentUser }"
+    >
+      <span class="sender">{{ msg.sender }}</span>
+      <span class="text">{{ msg.text }}</span>
+    </div>
+  </div>
+
+  <!-- Ô nhập tin nhắn -->
+  <div class="input-container">
+    <input
+      type="text"
+      [(ngModel)]="newMessage"
+      placeholder="Nhập tin nhắn..."
+      (keyup.enter)="sendMessage()"
+    />
+    <button (click)="sendMessage()">Gửi</button>
+  </div>
+</div>

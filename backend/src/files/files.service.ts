@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common"
-import type { ConfigService } from "@nestjs/config"
-import type { Repository } from "typeorm"
+import  { ConfigService } from "@nestjs/config"
+import  { Repository } from "typeorm"
 import { promises as fs } from "fs"
 import { join } from "path"
 import * as sharp from "sharp"
-import type { Express } from "express"
 
-import type { MessageAttachment } from "../database/entities/message-attachment.entity"
+import { MessageAttachment } from "../database/entities/message-attachment.entity"
 import type { UploadFileDto } from "./dto/upload-file.dto"
+import { InjectRepository } from "@nestjs/typeorm"
 
 export interface FileUploadResult {
   id: string
@@ -22,8 +22,9 @@ export interface FileUploadResult {
 @Injectable()
 export class FilesService {
   constructor(
-    private messageAttachmentRepository: Repository<MessageAttachment>,
-    private configService: ConfigService,
+    @InjectRepository(MessageAttachment)
+    private readonly messageAttachmentRepository: Repository<MessageAttachment>,
+    private readonly configService: ConfigService,
   ) {}
 
   async uploadFiles(files: Express.Multer.File[], uploadFileDto?: UploadFileDto): Promise<FileUploadResult[]> {

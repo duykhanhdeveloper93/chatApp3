@@ -12,10 +12,10 @@ import {
   ForbiddenException,
 } from "@nestjs/common"
 import { FilesInterceptor, FileInterceptor } from "@nestjs/platform-express"
-import type { Express } from "express"
+import { Express } from "express"
 
-import type { FilesService } from "./files.service"
-import type { UploadFileDto } from "./dto/upload-file.dto"
+import { FilesService } from "./files.service"
+import { UploadFileDto } from "./dto/upload-file.dto"
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard"
 import { PermissionsGuard } from "../auth/guards/permissions.guard"
 import { RequirePermissions } from "../auth/decorators/permissions.decorator"

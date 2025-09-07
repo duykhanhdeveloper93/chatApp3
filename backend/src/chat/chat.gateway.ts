@@ -5,20 +5,22 @@ import {
   type OnGatewayConnection,
   type OnGatewayDisconnect,
   WebSocketServer,
+  ConnectedSocket,
+  MessageBody,
 } from "@nestjs/websockets"
 import { UseGuards, Logger } from "@nestjs/common"
-import type { Server, Socket } from "socket.io"
-import type { JwtService } from "@nestjs/jwt"
-import type { ConfigService } from "@nestjs/config"
+import { Server, Socket } from "socket.io"
+import { JwtService } from "@nestjs/jwt"
+import { ConfigService } from "@nestjs/config"
 
-import type { MessagesService } from "./messages.service"
-import type { ChatService } from "./chat.service"
-import type { RedisService } from "../common/config/redis.config"
-import type { RabbitMQService } from "../common/config/rabbitmq.config"
+import { MessagesService } from "./messages.service"
+import { ChatService } from "./chat.service"
+import { RedisService } from "../common/config/redis.config"
+import { RabbitMQService } from "../common/config/rabbitmq.config"
 import { WsJwtGuard } from "../auth/guards/ws-jwt.guard"
-import type { CreateMessageDto } from "./dto/create-message.dto"
-import type { JoinRoomDto } from "./dto/join-room.dto"
-import type { TypingDto } from "./dto/typing.dto"
+import { CreateMessageDto } from "./dto/create-message.dto"
+import { JoinRoomDto } from "./dto/join-room.dto"
+import { TypingDto } from "./dto/typing.dto"
 
 interface AuthenticatedSocket extends Socket {
   user?: {
@@ -109,7 +111,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @UseGuards(WsJwtGuard)
   @SubscribeMessage("join:room")
-  async handleJoinRoom(joinRoomDto: JoinRoomDto, client: AuthenticatedSocket) {
+  async handleJoinRoom( @MessageBody() joinRoomDto: JoinRoomDto,
+                        @ConnectedSocket() client: AuthenticatedSocket) {
     try {
       const { chatRoomId } = joinRoomDto
 
@@ -157,7 +160,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @UseGuards(WsJwtGuard)
   @SubscribeMessage("send:message")
-  async handleSendMessage(createMessageDto: CreateMessageDto, client: AuthenticatedSocket) {
+  async handleSendMessage(@MessageBody() createMessageDto: CreateMessageDto,@ConnectedSocket() client: AuthenticatedSocket) {
     try {
       const message = await this.messagesService.createMessage(createMessageDto, client.user.id)
 

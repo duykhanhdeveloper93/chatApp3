@@ -14,6 +14,8 @@ import { ChatRoom } from "../database/entities/chat-room.entity"
 import { Message } from "../database/entities/message.entity"
 import { MessageAttachment } from "../database/entities/message-attachment.entity"
 import { User } from "../database/entities/user.entity"
+import { CommonModule } from '../common/common.module'
+import { FilesModule } from "@/files/files.module"
 
 @Module({
   imports: [
@@ -27,7 +29,10 @@ import { User } from "../database/entities/user.entity"
         },
       }),
       inject: [ConfigService],
+     
     }),
+     CommonModule,
+     FilesModule
   ],
   controllers: [ChatController, MessagesController],
   providers: [ChatService, MessagesService, ChatGateway, WsJwtGuard],

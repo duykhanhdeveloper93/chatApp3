@@ -10,12 +10,13 @@ import {
   Query,
   ParseUUIDPipe,
   ParseIntPipe,
+  Body,
 } from "@nestjs/common"
-import type { ChatService } from "./chat.service"
-import type { CreateChatRoomDto } from "./dto/create-chat-room.dto"
-import type { UpdateChatRoomDto } from "./dto/update-chat-room.dto"
-import type { AddParticipantsDto } from "./dto/add-participants.dto"
-import type { RemoveParticipantDto } from "./dto/remove-participant.dto"
+import { ChatService } from "./chat.service"
+import { CreateChatRoomDto } from "./dto/create-chat-room.dto"
+import { UpdateChatRoomDto } from "./dto/update-chat-room.dto"
+import { AddParticipantsDto } from "./dto/add-participants.dto"
+import { RemoveParticipantDto } from "./dto/remove-participant.dto"
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard"
 import { PermissionsGuard } from "../auth/guards/permissions.guard"
 import { RequirePermissions } from "../auth/decorators/permissions.decorator"
@@ -27,7 +28,7 @@ export class ChatController {
 
   @Post("rooms")
   @RequirePermissions("chat", "create")
-  createChatRoom(createChatRoomDto: CreateChatRoomDto, @Request() req) {
+  createChatRoom(@Body() createChatRoomDto: CreateChatRoomDto, @Request() req) {
     return this.chatService.createChatRoom(createChatRoomDto, req.user.id)
   }
 

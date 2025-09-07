@@ -1,17 +1,20 @@
 import { Injectable, NotFoundException, ForbiddenException } from "@nestjs/common"
-import type { Repository } from "typeorm"
-import { type Message, MessageType } from "../database/entities/message.entity"
-import type { MessageAttachment } from "../database/entities/message-attachment.entity"
-import type { ChatService } from "./chat.service"
-import type { RabbitMQService } from "../common/config/rabbitmq.config"
-import type { FilesService } from "../files/files.service"
-import type { CreateMessageDto } from "./dto/create-message.dto"
-import type { UpdateMessageDto } from "./dto/update-message.dto"
+import { Repository } from "typeorm"
+import { Message, MessageType } from "../database/entities/message.entity"
+import { MessageAttachment } from "../database/entities/message-attachment.entity"
+import { ChatService } from "./chat.service"
+import { RabbitMQService } from "../common/config/rabbitmq.config"
+import { FilesService } from "../files/files.service"
+import { CreateMessageDto } from "./dto/create-message.dto"
+import { UpdateMessageDto } from "./dto/update-message.dto"
+import { InjectRepository } from "@nestjs/typeorm"
 
 @Injectable()
 export class MessagesService {
   constructor(
+    @InjectRepository(Message)
     private messageRepository: Repository<Message>,
+     @InjectRepository(MessageAttachment)
     private messageAttachmentRepository: Repository<MessageAttachment>,
     private chatService: ChatService,
     private rabbitMQService: RabbitMQService,

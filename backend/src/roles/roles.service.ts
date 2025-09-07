@@ -1,16 +1,21 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
 import type { Repository } from "typeorm"
-import type { Role } from "../database/entities/role.entity"
-import type { Permission } from "../database/entities/permission.entity"
+import { Role } from "../database/entities/role.entity"
+import { Permission } from "../database/entities/permission.entity"
 import type { CreateRoleDto } from "./dto/create-role.dto"
 import type { UpdateRoleDto } from "./dto/update-role.dto"
+import { InjectRepository } from "@nestjs/typeorm"
 
 @Injectable()
 export class RolesService {
   constructor(
-    private rolesRepository: Repository<Role>,
-    private permissionsRepository: Repository<Permission>,
-  ) {}
+    @InjectRepository(Role)
+    private readonly rolesRepository: Repository<Role>,
+    @InjectRepository(Permission)
+    private readonly permissionsRepository: Repository<Permission>,
+  ) {
+   
+  }
 
   async create(createRoleDto: CreateRoleDto): Promise<Role> {
     const role = this.rolesRepository.create(createRoleDto)

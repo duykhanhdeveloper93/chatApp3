@@ -1,18 +1,22 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from "@nestjs/common"
 import { type Repository, In } from "typeorm"
-import { type ChatRoom, ChatRoomType } from "../database/entities/chat-room.entity"
-import type { Message } from "../database/entities/message.entity"
-import type { User } from "../database/entities/user.entity"
+import { ChatRoom, ChatRoomType } from "../database/entities/chat-room.entity"
+import { Message } from "../database/entities/message.entity"
+import { User } from "../database/entities/user.entity"
 import type { CreateChatRoomDto } from "./dto/create-chat-room.dto"
 import type { UpdateChatRoomDto } from "./dto/update-chat-room.dto"
 import type { AddParticipantsDto } from "./dto/add-participants.dto"
 import type { RemoveParticipantDto } from "./dto/remove-participant.dto"
+import { InjectRepository } from "@nestjs/typeorm"
 
 @Injectable()
 export class ChatService {
   constructor(
+    @InjectRepository(ChatRoom)
     private chatRoomRepository: Repository<ChatRoom>,
+     @InjectRepository(Message)
     private messageRepository: Repository<Message>,
+     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
 

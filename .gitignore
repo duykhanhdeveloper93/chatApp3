@@ -3,9 +3,7 @@
 # dependencies
 /node_modules
 backend/node_modules/
-chat-app-fe/node_modules/
 backend/dist/
-chat-app-fe/dist/
 testSocketIoClient/node_modules/
 
 # next.js

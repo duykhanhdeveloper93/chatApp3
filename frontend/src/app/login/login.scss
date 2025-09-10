@@ -17,6 +17,13 @@
   z-index: -1;
 }
 
+.video-toggle-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+}
+
 .login-card {
   width: 350px;
   padding: 20px;

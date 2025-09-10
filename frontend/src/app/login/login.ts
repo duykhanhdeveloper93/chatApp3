@@ -29,7 +29,8 @@ export class Login {
   email: string = '';
   password: string = '';
   error: string = '';
-
+ isPlaying: boolean = true;
+ 
   constructor(private authService: AuthService) {}
 
   onLogin() {
@@ -37,5 +38,15 @@ export class Login {
       next: () => {},
       error: (err) => this.error = 'Đăng nhập thất bại: ' + err.message
     });
+  }
+
+  toggleVideo(video: HTMLVideoElement) {
+    if (video.paused) {
+      video.play();
+      this.isPlaying = true;
+    } else {
+      video.pause();
+      this.isPlaying = false;
+    }
   }
 }

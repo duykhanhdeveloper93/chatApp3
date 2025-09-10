@@ -23,6 +23,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
   async login(@Body() loginDto: LoginDto) {
+    console.log("111111")
     return await this.authService.login(loginDto)
   }
 

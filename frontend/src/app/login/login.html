@@ -1,9 +1,14 @@
 <div class="login-container">
   <!-- Background video từ URL -->
-  <video autoplay muted loop class="background-video">
+  <video #videoRef autoplay muted loop class="background-video">
     <source src="https://cdn.pixabay.com/video/2023/01/23/147704-792078376_large.mp4" type="video/mp4">
     Trình duyệt không hỗ trợ video.
   </video>
+
+  <!-- Nút Play/Pause video -->
+  <button mat-fab color="accent" class="video-toggle-btn" (click)="toggleVideo(videoRef)">
+    {{ isPlaying ? '❚❚' : '▶' }}
+  </button>
 
   <mat-card class="login-card">
     <mat-card-header>

@@ -1,0 +1,29 @@
+<div class="login-container">
+  <!-- Background video từ URL -->
+  <video autoplay muted loop class="background-video">
+    <source src="https://cdn.pixabay.com/video/2023/01/23/147704-792078376_large.mp4" type="video/mp4">
+    Trình duyệt không hỗ trợ video.
+  </video>
+
+  <mat-card class="login-card">
+    <mat-card-header>
+      <mat-card-title>Đăng Nhập</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form (ngSubmit)="onLogin()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput [(ngModel)]="email" name="email" required>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mật khẩu</mat-label>
+          <input matInput type="password" [(ngModel)]="password" name="password" required>
+        </mat-form-field>
+        <button mat-raised-button color="primary" class="login-btn" type="submit">
+          Đăng nhập
+        </button>
+      </form>
+      <p *ngIf="error" class="error">{{ error }}</p>
+    </mat-card-content>
+  </mat-card>
+</div>

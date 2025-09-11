@@ -1,29 +1,59 @@
 version: '3.8'
 
 services:
-  # MySQL Database
+  # Backend
+  backend:
+    build: ./backend
+    container_name: chat-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: chat_user
+      DB_PASSWORD: chat_password
+      DB_NAME: chat_app_dev
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    networks:
+      - chat-network
+    depends_on:
+      - mysql
+      - redis
+      - rabbitmq
+
+  # Frontend
+  frontend:
+    build: ./frontend
+    container_name: chat-frontend
+    restart: unless-stopped
+    ports:
+      - "12670:80"
+    networks:
+      - chat-network
+
+  # MySQL
   mysql:
     image: mysql:8.0
     container_name: chat-mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: chat_app
+      MYSQL_DATABASE: chat_app_dev
       MYSQL_USER: chat_user
       MYSQL_PASSWORD: chat_password
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./mysql/init:/docker-entrypoint-initdb.d
     networks:
       - chat-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
 
-  # Redis Cache
+  # Redis
   redis:
     image: redis:7-alpine
     container_name: chat-redis
@@ -34,12 +64,8 @@ services:
       - redis_data:/data
     networks:
       - chat-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      timeout: 10s
-      retries: 5
 
-  # RabbitMQ Message Broker
+  # RabbitMQ
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: chat-rabbitmq
@@ -54,73 +80,11 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - chat-network
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      timeout: 30s
-      retries: 5
-
-  # NestJS Backend
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: chat-backend
-    restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      PORT: 3000
-      DATABASE_HOST: mysql
-      DATABASE_PORT: 3306
-      DATABASE_USERNAME: chat_user
-      DATABASE_PASSWORD: chat_password
-      DATABASE_NAME: chat_app
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      RABBITMQ_URL: amqp://chat_user:chat_password@rabbitmq:5672
-      JWT_SECRET: your-super-secret-jwt-key-change-in-production
-      JWT_REFRESH_SECRET: your-super-secret-refresh-key-change-in-production
-      FRONTEND_URL: http://localhost:4200
-    ports:
-      - "3000:3000"
-    volumes:
-      - backend_uploads:/app/uploads
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - chat-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      timeout: 10s
-      retries: 5
-
-  # Angular Frontend
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: chat-frontend
-    restart: unless-stopped
-    ports:
-      - "4200:80"
-    depends_on:
-      - backend
-    networks:
-      - chat-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
-      timeout: 10s
-      retries: 3
 
 volumes:
   mysql_data:
   redis_data:
   rabbitmq_data:
-  backend_uploads:
 
 networks:
   chat-network:

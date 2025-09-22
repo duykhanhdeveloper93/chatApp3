@@ -32,7 +32,7 @@ services:
     container_name: chat-frontend
     restart: unless-stopped
     ports:
-      - "22670:80" # đổi 4200 thành 22670 cho đúng thằng port tao đang thuê ở vps giá rẻ
+      - "4200:80" # đổi 4200 thành 22670 cho đúng thằng port tao đang thuê ở vps giá rẻ
     networks:
       - chat-network
 

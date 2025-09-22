@@ -6,18 +6,17 @@ pipeline {
     }
 
     stages {
-        
+    
 
-       stage('Build & Deploy Docker') {
+        stage('Build & Deploy Docker') {
             steps {
                 echo 'Stop existing containers if any'
-                sh "docker-compose -p chatapp -f ${DOCKER_COMPOSE_FILE} down --volumes --remove-orphans"
+                sh "docker-compose -f ${DOCKER_COMPOSE_FILE} down"
 
                 echo 'Build and start containers'
-                sh "docker-compose -p chatapp -f ${DOCKER_COMPOSE_FILE} up -d --build"
+                sh "docker-compose -f ${DOCKER_COMPOSE_FILE} up -d --build"
             }
         }
-
     }
 
     post {

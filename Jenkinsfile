@@ -6,12 +6,7 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                echo 'Checkout code from Git'
-                git branch: 'main', url: 'https://github.com/duykhanhdeveloper93/chatApp3'
-            }
-        }
+        
 
         stage('Build & Deploy Docker') {
             steps {

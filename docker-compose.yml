@@ -32,9 +32,9 @@ services:
       rabbitmq:
         condition: service_healthy
       mysql:
-        condition: service_started
+        condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
 
   # Frontend
   frontend:
@@ -63,6 +63,12 @@ services:
     networks:
       - chat-network
 
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Redis
   redis:
     image: redis:7-alpine
@@ -74,6 +80,12 @@ services:
       - redis_data:/data
     networks:
       - chat-network
+    
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # RabbitMQ
   rabbitmq:

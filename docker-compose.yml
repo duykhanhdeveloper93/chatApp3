@@ -23,8 +23,8 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_MANAGEMENT_PORT: 15672
       RABBITMQ_HOST: rabbitmq
-      REDIS_HOST : redis
-      REDIS_PORT : 6379
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
 
     networks:
       - chat-network
@@ -42,7 +42,7 @@ services:
     container_name: chat-frontend
     restart: unless-stopped
     ports:
-      - "4200:80" # đổi 4200 thành 22670 cho đúng thằng port tao đang thuê ở vps giá rẻ
+      - "4200:80" # đổi thành "22670:80" nếu VPS chỉ mở cổng 22670
     networks:
       - chat-network
 
@@ -90,6 +90,11 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - chat-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   mysql_data:

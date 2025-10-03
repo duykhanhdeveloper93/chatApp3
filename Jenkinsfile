@@ -1,30 +1,25 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_COMPOSE_FILE = 'docker-compose.yml'
-    }
-
     stages {
-    
-
-        stage('Build & Deploy Docker') {
+        stage('Checkout') {
             steps {
-                echo 'Stop existing containers if any'
-                sh "docker-compose -f ${DOCKER_COMPOSE_FILE} down"
-
-                echo 'Build and start containers'
-                sh "docker-compose -f ${DOCKER_COMPOSE_FILE} up -d --build"
+                git branch: 'main',
+                    url: 'https://github.com/duykhanhdeveloper93/chatApp3'
             }
         }
-    }
 
-    post {
-        success {
-            echo "Deployment successful!"
+        stage('Build Backend & Frontend') {
+            steps {
+                sh 'docker-compose -f docker-compose.yml build'
+            }
         }
-        failure {
-            echo "Deployment failed!"
+
+        stage('Deploy') {
+            steps {
+                sh 'docker-compose -f docker-compose.yml down'
+                sh 'docker-compose -f docker-compose.yml up -d'
+            }
         }
     }
 }

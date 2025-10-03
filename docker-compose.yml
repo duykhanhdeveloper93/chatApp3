@@ -12,7 +12,7 @@ services:
       NODE_ENV: production
       DB_HOST: mysql
       DB_PORT: 3306
-      DB_USER: chat_user
+      DB_USERNAME: chat_user
       DB_PASSWORD: chat_password
       DB_NAME: chat_app_dev
       REDIS_HOST: redis

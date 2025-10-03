@@ -88,6 +88,14 @@ services:
     networks:
       - chat-network
 
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mysql:
+        condition: service_started
+      redis:
+        condition: service_started
+
 volumes:
   mysql_data:
   redis_data:

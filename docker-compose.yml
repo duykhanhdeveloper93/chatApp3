@@ -19,6 +19,8 @@ services:
       REDIS_PORT: 6379
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
+      JWT_SECRET: 2f1a92a1a6d8481fb9f60e6a5e8d7f79b42e6ef6a9243c1d8d0f4f2a9c3b7d88
+      JWT_EXPIRES_IN: 7d
     networks:
       - chat-network
     depends_on:

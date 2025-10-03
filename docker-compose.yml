@@ -29,9 +29,12 @@ services:
     networks:
       - chat-network
     depends_on:
-      - mysql
-      - redis
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+      mysql:
+        condition: service_started
+      redis:
+        condition: service_started
 
   # Frontend
   frontend:
@@ -87,14 +90,6 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - chat-network
-
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      mysql:
-        condition: service_started
-      redis:
-        condition: service_started
 
 volumes:
   mysql_data:

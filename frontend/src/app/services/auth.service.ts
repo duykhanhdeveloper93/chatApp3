@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 })
 export class AuthService {
   //private apiUrl = 'http://localhost:3000/api/auth';
-  private apiUrl = 'http://chat-backend:3000/api/auth';
+  private apiUrl = 'http://103.77.242.45:3000/api/auth';
   private tokenKey = 'auth_token';
 
   constructor(private http: HttpClient, private router: Router) {}

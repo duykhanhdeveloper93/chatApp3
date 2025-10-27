@@ -12,5 +12,6 @@ WORKDIR /app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
 RUN npm install --only=production
-EXPOSE 3000
-CMD ["node", "dist/main.js"]
+
+# Optional: chạy migration tự động
+CMD ["sh", "-c", "npx typeorm migration:run || true && node dist/main.js"]

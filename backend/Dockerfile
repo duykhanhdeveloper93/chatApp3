@@ -23,6 +23,5 @@ COPY --from=builder /app/package*.json ./
 ENV NODE_ENV=production
 
 # ⚠️ Chạy migration đúng cách (chỉ khi có file data-source)
-CMD ["sh", "-c", "npx typeorm-ts-node-commonjs migration:run -d src/data-source.ts && node dist/main.js"]
 CMD ["sh", "-c", "npx typeorm migration:run -d dist/src/data-source.js && node dist/main.js"]
 

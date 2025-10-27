@@ -25,6 +25,8 @@ services:
       RABBITMQ_HOST: rabbitmq
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      FRONTEND_URL: http://103.77.242.45:4200 # Thiết lập để enable CORS cho FE gọi được BE
+
 
     networks:
       - chat-network

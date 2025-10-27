@@ -4,7 +4,7 @@ pipeline {
     environment {
         COMPOSE_FILE = 'docker-compose.yml'
         PROJECT_NAME = 'chatapp' // tên chung cho các container, tránh trùng
-        DOCKER_BUILDKIT = '1'    // bật BuildKit để build nhanh + cache tốt hơn
+        //DOCKER_BUILDKIT = '1'    // bật BuildKit để build nhanh + cache tốt hơn
     }
 
     stages {

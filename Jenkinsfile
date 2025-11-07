@@ -8,7 +8,6 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 echo "📥 Lấy source code từ GitHub..."
@@ -20,20 +19,17 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir("${BACKEND_DIR}") {
-                    sh '''
-                        echo "📦 Cài đặt dependencies cho backend..."
-                        npm install
-                    '''
+                    echo "📦 Cài đặt dependencies cho backend..."
+                    sh 'npm install'
                 }
             }
         }
 
         stage('Start Temporary MySQL for Migration') {
             steps {
+                echo "🐳 Khởi động tạm MySQL container..."
                 sh '''
-                    echo "🐳 Khởi động tạm MySQL container..."
-                    docker-compose -p $PROJECT_NAME -f $COMPOSE_FILE up -d mysql
-
+                    docker-compose -p chatapp -f docker-compose.yml up -d mysql
                     echo "⏳ Đợi MySQL khởi động..."
                     sleep 15
                 '''
@@ -46,17 +42,15 @@ pipeline {
                     sh '''
                         echo "🧠 Sinh migration mới..."
 
-                        # ✅ Tạo file .env tạm cho Jenkins (sử dụng localhost để kết nối MySQL)
+                        # ✅ Tạo file .env tạm cho Jenkins
                         cat > .env <<EOF
 DB_HOST=localhost
 DB_PORT=3306
 DB_USERNAME=chat_user
 DB_PASSWORD=chat_password
 DB_NAME=chat_app_dev
-
 NODE_ENV=development
 JWT_SECRET=2f1a92a1a6d8481fb9f60e6a5e8d7f79b42e6ef6a9243c1d8d0f4f2a9c3b7d88
-
 RABBITMQ_DEFAULT_USER=chat_user
 RABBITMQ_DEFAULT_PASS=chat_password
 RABBITMQ_PORT=5672
@@ -81,37 +75,29 @@ EOF
         stage('Build & Deploy Containers') {
             steps {
                 sh '''
+                    echo "🧹 Xóa container cũ trước khi build lại..."
+                    docker-compose -p chatapp -f docker-compose.yml down -v --remove-orphans
+
                     echo "🚀 Build & khởi động lại toàn bộ project..."
-                    docker-compose -p $PROJECT_NAME -f $COMPOSE_FILE up -d --build
-
-                    echo "⏳ Đợi backend sẵn sàng để chạy migration..."
-                    sleep 15
-
-                    echo "⚙️ Chạy migration trong container backend..."
-                    docker exec chat-backend npx typeorm migration:run -d dist/data-source.js \
-                        || echo "⚠️ Không có migration nào để chạy"
+                    docker-compose -p chatapp -f docker-compose.yml up -d --build
                 '''
             }
         }
     }
 
     post {
-        success {
-            echo '✅ Triển khai thành công!'
-            sh '''
-                docker image prune -f
-                docker builder prune -f
-            '''
-        }
-        failure {
-            echo '❌ Triển khai thất bại! Kiểm tra log để biết chi tiết.'
-            sh '''
-                echo "🧹 Dừng các container tạm..."
-                docker-compose -p $PROJECT_NAME -f $COMPOSE_FILE down || true
-            '''
-        }
         always {
             echo "🏁 Pipeline hoàn tất."
+        }
+        success {
+            echo "✅ Triển khai thành công!"
+        }
+        failure {
+            echo "❌ Triển khai thất bại! Kiểm tra log để biết chi tiết."
+            sh '''
+                echo "🧹 Dừng các container tạm..."
+                docker-compose -p chatapp -f docker-compose.yml down
+            '''
         }
     }
 }

@@ -46,9 +46,9 @@ pipeline {
                     sh '''
                         echo "🧠 Sinh migration mới..."
 
-                        # ✅ Tạo file .env tạm thời cho Jenkins
+                        # ✅ Tạo file .env tạm cho Jenkins (sử dụng localhost để kết nối MySQL)
                         cat > .env <<EOF
-DB_HOST=mysql
+DB_HOST=localhost
 DB_PORT=3306
 DB_USERNAME=chat_user
 DB_PASSWORD=chat_password

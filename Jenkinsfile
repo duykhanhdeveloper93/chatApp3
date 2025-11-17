@@ -94,7 +94,7 @@ EOF
                 echo "⚙️ Chạy migration an toàn..."
                 sh '''
                     if docker ps | grep -q chat-backend; then
-                        docker exec chat-backend sh -c "npm run migration:run || echo '⚠️ Migration lỗi nhẹ — bỏ qua.'"
+                        docker exec chat-backend sh -c "npm run migration:run -- --transact=false || true"
                     else
                         echo "❌ Backend chưa chạy — bỏ qua bước migration"
                     fi

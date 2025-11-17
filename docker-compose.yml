@@ -1,54 +1,15 @@
-version: '3.8'
+version: '3.9'
+
+networks:
+  chat_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:
+  rabbitmq_data:
 
 services:
-  # Backend
-  backend:
-    build: ./backend
-    container_name: chat-backend
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      NODE_ENV: production
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_USERNAME: chat_user
-      DB_PASSWORD: chat_password
-      DB_NAME: chat_app_dev
-      JWT_SECRET: 2f1a92a1a6d8481fb9f60e6a5e8d7f79b42e6ef6a9243c1d8d0f4f2a9c3b7d88
-      JWT_EXPIRES_IN: 7d
-
-      RABBITMQ_DEFAULT_USER: chat_user
-      RABBITMQ_DEFAULT_PASS: chat_password
-      RABBITMQ_PORT: 5672
-      RABBITMQ_MANAGEMENT_PORT: 15672
-      RABBITMQ_HOST: rabbitmq
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      FRONTEND_URL: http://103.77.242.45:4200 # Thiết lập để enable CORS cho FE gọi được BE
-
-
-    networks:
-      - chat-network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  # Frontend
-  frontend:
-    build: ./frontend
-    container_name: chat-frontend
-    restart: unless-stopped
-    ports:
-      - "4200:80" # đổi thành "22670:80" nếu VPS chỉ mở cổng 22670
-    networks:
-      - chat-network
-
-  # MySQL
   mysql:
     image: mysql:8.0
     container_name: chat-mysql
@@ -63,17 +24,21 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      - chat-network
-
+      - chat_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpassword"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 20s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  # Redis
   redis:
-    image: redis:7-alpine
+    image: redis:7.0
     container_name: chat-redis
     restart: unless-stopped
     ports:
@@ -81,17 +46,21 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - chat-network
-    
+      - chat_network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  # RabbitMQ
   rabbitmq:
-    image: rabbitmq:3-management-alpine
+    image: rabbitmq:3-management
     container_name: chat-rabbitmq
     restart: unless-stopped
     environment:
@@ -103,18 +72,51 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
-      - chat-network
+      - chat_network
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 20s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-volumes:
-  mysql_data:
-  redis_data:
-  rabbitmq_data:
-
-networks:
-  chat-network:
-    driver: bridge
+  backend:
+    build: ./backend
+    container_name: chat-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USERNAME: chat_user
+      DB_PASSWORD: chat_password
+      DB_NAME: chat_app_dev
+      NODE_ENV: development
+      JWT_SECRET: 2f1a92a1a6d8481fb9f60e6a5e8d7f79b42e6ef6a9243c1d8d0f4f2a9c3b7d88
+      RABBITMQ_DEFAULT_USER: chat_user
+      RABBITMQ_DEFAULT_PASS: chat_password
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_MANAGEMENT_PORT: 15672
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - chat_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

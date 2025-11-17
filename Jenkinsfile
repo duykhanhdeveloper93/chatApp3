@@ -36,11 +36,25 @@ pipeline {
             }
         }
 
+        stage('Generate Migration for New Tables') {
+            steps {
+                dir("${BACKEND_DIR}") {
+                    echo "🧠 Kiểm tra từng bảng và generate migration nếu cần..."
+                    sh '''
+                        # Load .env
+                        export $(grep -v '^#' .env | xargs)
+                        
+                        # Chạy script Node để generate migration cho bảng mới
+                        docker exec chat-backend sh -c "npx ts-node -r tsconfig-paths/register ./src/generate-migration-if-new.ts"
+                    '''
+                }
+            }
+        }
+
         stage('Build & Deploy Containers') {
             steps {
-                echo "🚀 Build & khởi động lại backend..."
+                echo "🚀 Build & khởi động backend..."
                 sh '''
-                    docker compose --project-name ${PROJECT_NAME} down -v --remove-orphans
                     docker compose --project-name ${PROJECT_NAME} up -d --build
                 '''
             }
@@ -48,22 +62,10 @@ pipeline {
 
         stage('Run Safe Migrations') {
             steps {
-                echo "⚙️ Chạy migration an toàn trực tiếp trên host..."
+                echo "⚙️ Chạy tất cả migration còn chưa chạy..."
                 dir("${BACKEND_DIR}") {
                     sh '''
-                        # Load .env
-                        export $(grep -v '^#' .env | xargs)
-
-                        # Kiểm tra DB
-                        TABLE_COUNT=$(docker exec chat-mysql sh -c "mysql -u$DB_USERNAME -p$DB_PASSWORD -D$DB_NAME -se 'SHOW TABLES;' | wc -l")
-                        
-                        if [ "$TABLE_COUNT" -eq 0 ]; then
-                            echo "📄 DB trống → chạy tất cả migration..."
-                            npx ts-node -r tsconfig-paths/register ./src/data-source.ts migration:run
-                        else
-                            echo "✅ DB đã có bảng → chạy migration chưa chạy..."
-                            npx ts-node -r tsconfig-paths/register ./src/data-source.ts migration:run
-                        fi
+                        docker exec chat-backend sh -c "npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts"
                     '''
                 }
             }

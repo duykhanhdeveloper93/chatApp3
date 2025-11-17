@@ -1,41 +1,40 @@
-import { DataSource } from "typeorm";
-import * as dotenv from "dotenv";
-import * as path from "path";
+import { DataSource } from 'typeorm';
+import { execSync } from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
+import { entities } from './entities'; // import tất cả entity
 
-dotenv.config();
+const dataSource = new DataSource({
+    type: 'mysql',
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    entities,
+});
 
-// Kiểm tra môi trường
-const isTs = process.env.NODE_ENV !== "production"; // dev: ts, prod/dist: js
+async function main() {
+    await dataSource.initialize();
+    const queryRunner = dataSource.createQueryRunner();
 
-console.log("DB_HOST:", process.env.DB_HOST);
-console.log("DB_PORT:", process.env.DB_PORT);
-console.log("DB_NAME:", process.env.DB_NAME);
-console.log("Running with", isTs ? "TS files" : "JS files");
+    for (const entity of entities) {
+        const tableName = dataSource.getMetadata(entity).tableName;
+        const result = await queryRunner.query(`SHOW TABLES LIKE '${tableName}'`);
+        if (result.length === 0) {
+            const migrationName = `Auto_${tableName}_${Date.now()}`;
+            console.log(`📄 Table ${tableName} chưa tồn tại → generate migration ${migrationName}`);
+            execSync(`npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate -d src/data-source.ts src/migrations/${migrationName}`, { stdio: 'inherit' });
+        } else {
+            console.log(`✅ Table ${tableName} đã tồn tại → bỏ qua`);
+        }
+    }
 
-export default new DataSource({
-  type: "mysql",
-  host: process.env.DB_HOST || "localhost",
-  port: Number(process.env.DB_PORT) || 3306,
-  username: process.env.DB_USERNAME || "root",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "chat_app_dev",
+    await queryRunner.release();
+    await dataSource.destroy();
+}
 
-  // Entities: TS khi dev, JS khi build production
-  entities: [
-    path.join(
-      __dirname,
-      isTs ? "/**/*.entity.ts" : "/**/*.entity.js"
-    ),
-  ],
-
-  // Migrations: TS khi dev, JS khi build production
-  migrations: [
-    path.join(
-      __dirname,
-      isTs ? "/migrations/**/*.ts" : "/migrations/**/*.js"
-    ),
-  ],
-
-  synchronize: false, // production nên false
-  logging: true,       // bật log để xem query khi migrate
+main().catch(err => {
+    console.error(err);
+    process.exit(1);
 });

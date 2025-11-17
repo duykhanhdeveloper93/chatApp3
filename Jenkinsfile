@@ -36,38 +36,40 @@ pipeline {
             }
         }
 
-        stage('Generate Migration for New Tables') {
+        stage('Build Backend Image') {
             steps {
-                dir("${BACKEND_DIR}") {
-                    echo "🧠 Kiểm tra từng bảng và generate migration nếu cần..."
-                    sh '''
-                        # Load .env
-                        export $(grep -v '^#' .env | xargs)
-                        
-                        # Chạy script Node để generate migration cho bảng mới
-                        docker exec chat-backend sh -c "npx ts-node -r tsconfig-paths/register ./src/generate-migration-if-new.ts"
-                    '''
-                }
+                echo "🛠️ Build Docker image backend (bao gồm generate script)..."
+                sh '''
+                    docker compose --project-name ${PROJECT_NAME} build backend
+                '''
             }
         }
 
-        stage('Build & Deploy Containers') {
+        stage('Generate Migration for New Tables') {
             steps {
-                echo "🚀 Build & khởi động backend..."
-                sh '''
-                    docker compose --project-name ${PROJECT_NAME} up -d --build
-                '''
+                echo "🧠 Kiểm tra từng bảng và generate migration nếu cần..."
+                sh """
+                    docker compose --project-name ${PROJECT_NAME} up -d backend
+                    docker exec -w /app/backend chat-backend sh -c \\
+                    "npx ts-node -r tsconfig-paths/register ./src/generate-migration-if-new.ts"
+                """
             }
         }
 
         stage('Run Safe Migrations') {
             steps {
-                echo "⚙️ Chạy tất cả migration còn chưa chạy..."
-                dir("${BACKEND_DIR}") {
-                    sh '''
-                        docker exec chat-backend sh -c "npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts"
-                    '''
-                }
+                echo "⚙️ Chạy migration an toàn..."
+                sh """
+                    docker exec -w /app/backend chat-backend sh -c \\
+                    "npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts"
+                """
+            }
+        }
+
+        stage('Start All Containers') {
+            steps {
+                echo "🚀 Khởi động toàn bộ hệ thống..."
+                sh 'docker compose --project-name ${PROJECT_NAME} up -d'
             }
         }
     }
@@ -81,10 +83,7 @@ pipeline {
         }
         failure {
             echo "❌ Triển khai thất bại — kiểm tra log để biết chi tiết."
-            sh '''
-                echo "🧹 Dừng các container lỗi..."
-                docker compose --project-name ${PROJECT_NAME} down
-            '''
+            sh 'docker compose --project-name ${PROJECT_NAME} down'
         }
     }
 }

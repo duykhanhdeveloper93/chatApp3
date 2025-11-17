@@ -80,9 +80,8 @@ EOF
 
         stage('Build & Deploy Containers') {
             steps {
-                echo "🚀 Build & khởi động lại toàn bộ project..."
+                echo "🚀 Build & khởi động lại backend..."
                 sh '''
-                    docker compose --project-name ${PROJECT_NAME} down -v --remove-orphans
                     docker compose --project-name ${PROJECT_NAME} up -d --build
                 '''
             }
@@ -93,23 +92,7 @@ EOF
                 echo "⚙️ Chạy migration an toàn..."
                 dir("${BACKEND_DIR}") {
                     sh '''
-                        # Lấy danh sách migration cần chạy
-                        MIGRATIONS=$(docker exec chat-backend sh -c "npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:show" || true)
-                        if [ -z "$MIGRATIONS" ]; then
-                            echo "⚠️ Không có migration mới → bỏ qua"
-                        else
-                            echo "🚀 Chạy các migration chưa chạy..."
-                            # Chạy migration cho từng bảng nếu bảng chưa tồn tại
-                            for TABLE in permissions roles users; do
-                                EXISTS=$(docker exec chat-mysql sh -c "mysql -u$DB_USERNAME -p$DB_PASSWORD -D$DB_NAME -se \"SHOW TABLES LIKE '$TABLE';\" | wc -l")
-                                if [ "$EXISTS" -eq 0 ]; then
-                                    echo "🗄️ Chạy migration cho bảng $TABLE..."
-                                    docker exec chat-backend sh -c "npm run migration:run -- --transact=false"
-                                else
-                                    echo "✅ Bảng $TABLE đã tồn tại → bỏ qua migration"
-                                fi
-                            done
-                        fi
+                        docker exec chat-backend sh -c "npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts"
                     '''
                 }
             }

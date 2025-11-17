@@ -48,7 +48,7 @@ pipeline {
                 sh """
                     docker compose --project-name ${PROJECT_NAME} up -d backend
                     docker exec -w /app chat-backend sh -c \\
-                    "npx ts-node -r tsconfig-paths/register ./src/generate-migration-if-new.ts"
+                    "npx ts-node -r tsconfig-paths/register ./src/data-source.ts"
                 """
             }
         }

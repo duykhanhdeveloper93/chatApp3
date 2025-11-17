@@ -41,7 +41,7 @@ pipeline {
                 dir("${BACKEND_DIR}") {
                     echo "🧠 Kiểm tra DB và generate migration nếu cần..."
                     sh '''
-                        # Load env
+                        # Load .env
                         if [ ! -f .env ]; then
                             cat > .env <<EOF
 DB_HOST=localhost
@@ -60,13 +60,10 @@ REDIS_HOST=redis
 REDIS_PORT=6379
 EOF
                         fi
-
                         export $(grep -v '^#' .env | xargs)
 
-                        # Kiểm tra DB
-                        echo "🔍 Kiểm tra bảng trong MySQL..."
+                        # Kiểm tra DB trống hay có bảng
                         TABLE_COUNT=$(docker exec chat-mysql sh -c "mysql -u$DB_USERNAME -p$DB_PASSWORD -D$DB_NAME -se 'SHOW TABLES;' | wc -l")
-
                         if [ "$TABLE_COUNT" -eq 0 ]; then
                             echo "📄 DB trống → sinh migration mới..."
                             MIGRATION_NAME="Init$(date +%s)"
@@ -96,11 +93,22 @@ EOF
                 echo "⚙️ Chạy migration an toàn..."
                 dir("${BACKEND_DIR}") {
                     sh '''
-                        # Nếu backend chạy thì chạy migration safe
-                        if docker ps | grep -q chat-backend; then
-                            docker exec chat-backend sh -c "npm run migration:run -- --transact=false || echo '⚠️ Migration lỗi nhẹ — bỏ qua'"
+                        # Lấy danh sách migration cần chạy
+                        MIGRATIONS=$(docker exec chat-backend sh -c "npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:show" || true)
+                        if [ -z "$MIGRATIONS" ]; then
+                            echo "⚠️ Không có migration mới → bỏ qua"
                         else
-                            echo "❌ Backend chưa chạy — bỏ qua bước migration"
+                            echo "🚀 Chạy các migration chưa chạy..."
+                            # Chạy migration cho từng bảng nếu bảng chưa tồn tại
+                            for TABLE in permissions roles users; do
+                                EXISTS=$(docker exec chat-mysql sh -c "mysql -u$DB_USERNAME -p$DB_PASSWORD -D$DB_NAME -se \"SHOW TABLES LIKE '$TABLE';\" | wc -l")
+                                if [ "$EXISTS" -eq 0 ]; then
+                                    echo "🗄️ Chạy migration cho bảng $TABLE..."
+                                    docker exec chat-backend sh -c "npm run migration:run -- --transact=false"
+                                else
+                                    echo "✅ Bảng $TABLE đã tồn tại → bỏ qua migration"
+                                fi
+                            done
                         fi
                     '''
                 }

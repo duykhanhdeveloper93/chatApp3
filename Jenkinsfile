@@ -41,6 +41,7 @@ pipeline {
                 dir("${BACKEND_DIR}") {
                     echo "🧠 Kiểm tra DB và generate migration nếu cần..."
                     sh '''
+                        # Load env
                         if [ ! -f .env ]; then
                             cat > .env <<EOF
 DB_HOST=localhost
@@ -62,6 +63,7 @@ EOF
 
                         export $(grep -v '^#' .env | xargs)
 
+                        # Kiểm tra DB
                         echo "🔍 Kiểm tra bảng trong MySQL..."
                         TABLE_COUNT=$(docker exec chat-mysql sh -c "mysql -u$DB_USERNAME -p$DB_PASSWORD -D$DB_NAME -se 'SHOW TABLES;' | wc -l")
 
@@ -92,13 +94,16 @@ EOF
         stage('Run Safe Migrations') {
             steps {
                 echo "⚙️ Chạy migration an toàn..."
-                sh '''
-                    if docker ps | grep -q chat-backend; then
-                        docker exec chat-backend sh -c "npm run migration:run -- --transact=false || true"
-                    else
-                        echo "❌ Backend chưa chạy — bỏ qua bước migration"
-                    fi
-                '''
+                dir("${BACKEND_DIR}") {
+                    sh '''
+                        # Nếu backend chạy thì chạy migration safe
+                        if docker ps | grep -q chat-backend; then
+                            docker exec chat-backend sh -c "npm run migration:run -- --transact=false || echo '⚠️ Migration lỗi nhẹ — bỏ qua'"
+                        else
+                            echo "❌ Backend chưa chạy — bỏ qua bước migration"
+                        fi
+                    '''
+                }
             }
         }
     }

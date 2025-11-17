@@ -11,8 +11,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo "📥 Lấy source code từ GitHub..."
-                git branch: 'main',
-                    url: 'https://github.com/duykhanhdeveloper93/chatApp3'
+                git branch: 'main', url: 'https://github.com/duykhanhdeveloper93/chatApp3'
             }
         }
 
@@ -39,9 +38,7 @@ pipeline {
         stage('Build Backend Image') {
             steps {
                 echo "🛠️ Build Docker image backend (bao gồm generate script)..."
-                sh '''
-                    docker compose --project-name ${PROJECT_NAME} build backend
-                '''
+                sh 'docker compose --project-name ${PROJECT_NAME} build backend'
             }
         }
 
@@ -50,7 +47,7 @@ pipeline {
                 echo "🧠 Kiểm tra từng bảng và generate migration nếu cần..."
                 sh """
                     docker compose --project-name ${PROJECT_NAME} up -d backend
-                    docker exec -w /app/backend chat-backend sh -c \\
+                    docker exec -w /app chat-backend sh -c \\
                     "npx ts-node -r tsconfig-paths/register ./src/generate-migration-if-new.ts"
                 """
             }
@@ -60,8 +57,8 @@ pipeline {
             steps {
                 echo "⚙️ Chạy migration an toàn..."
                 sh """
-                    docker exec -w /app/backend chat-backend sh -c \\
-                    "npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts"
+                    docker exec -w /app chat-backend sh -c \\
+                    "npx typeorm migration:run -d dist/data-source.js"
                 """
             }
         }

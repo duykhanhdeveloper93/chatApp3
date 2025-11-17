@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Copy toàn bộ source
+# Copy source code
 COPY tsconfig*.json ./
 COPY src ./src
 
@@ -20,11 +20,12 @@ WORKDIR /app
 # Copy node_modules và dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
-# ⚠️ copy src để ts-node migration chạy được
+# copy src để ts-node chạy migration
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/package*.json ./
 
+# Env
 ENV NODE_ENV=production
 
-# CMD chạy migration từng bảng → migration chung → start backend
-CMD ["sh", "-c", "npx ts-node -r tsconfig-paths/register ./src/generate-migration-if-new.ts && npx typeorm migration:run -d dist/data-source.js && node dist/main.js"]
+# Chạy migration trước khi start backend
+CMD ["sh", "-c", "npx ts-node -r tsconfig-paths/register ./src/data-source.ts && node dist/main.js"]

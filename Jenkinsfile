@@ -11,7 +11,8 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo "📥 Lấy source code từ GitHub..."
-                git branch: 'main', url: 'https://github.com/duykhanhdeveloper93/chatApp3'
+                git branch: 'main',
+                    url: 'https://github.com/duykhanhdeveloper93/chatApp3'
             }
         }
 
@@ -37,29 +38,17 @@ pipeline {
 
         stage('Build Backend Image') {
             steps {
-                echo "🛠️ Build Docker image backend (bao gồm generate script)..."
+                echo "🛠️ Build Docker image backend..."
                 sh 'docker compose --project-name ${PROJECT_NAME} build backend'
             }
         }
 
-        stage('Generate Migration for New Tables') {
+        stage('Run Migration & Start Backend') {
             steps {
-                echo "🧠 Kiểm tra từng bảng và generate migration nếu cần..."
-                sh """
+                echo "⚙️ Chạy migration và start backend..."
+                sh '''
                     docker compose --project-name ${PROJECT_NAME} up -d backend
-                    docker exec -w /app chat-backend sh -c \\
-                    "npx ts-node -r tsconfig-paths/register ./src/data-source.ts"
-                """
-            }
-        }
-
-        stage('Run Safe Migrations') {
-            steps {
-                echo "⚙️ Chạy migration an toàn..."
-                sh """
-                    docker exec -w /app chat-backend sh -c \\
-                    "npx typeorm migration:run -d dist/data-source.js"
-                """
+                '''
             }
         }
 
@@ -76,10 +65,10 @@ pipeline {
             echo "🏁 Pipeline hoàn tất."
         }
         success {
-            echo "✅ Triển khai thành công toàn bộ hệ thống!"
+            echo "✅ Triển khai thành công!"
         }
         failure {
-            echo "❌ Triển khai thất bại — kiểm tra log để biết chi tiết."
+            echo "❌ Triển khai thất bại — kiểm tra log."
             sh 'docker compose --project-name ${PROJECT_NAME} down'
         }
     }

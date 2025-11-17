@@ -1,19 +1,8 @@
 import { DataSource } from 'typeorm';
 import { execSync } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
+import { entities } from './database/entities';
 
-const entities: any[] = [];
-const entitiesPath = path.join(__dirname, 'database/entities');
-
-fs.readdirSync(entitiesPath).forEach(file => {
-  if (file.endsWith('.ts') || file.endsWith('.js')) {
-    const entity = require(path.join(entitiesPath, file));
-    Object.values(entity).forEach(e => entities.push(e));
-  }
-});
-
-const dataSource = new DataSource({
+export const dataSource = new DataSource({
   type: 'mysql',
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
@@ -23,7 +12,8 @@ const dataSource = new DataSource({
   entities,
 });
 
-async function main() {
+// Hàm kiểm tra table và generate migration nếu cần
+export async function generateMigrationsIfNew() {
   await dataSource.initialize();
   const queryRunner = dataSource.createQueryRunner();
 
@@ -50,7 +40,10 @@ async function main() {
   await dataSource.destroy();
 }
 
-main().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+// Nếu chạy trực tiếp bằng `ts-node`
+if (require.main === module) {
+  generateMigrationsIfNew().catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
+}

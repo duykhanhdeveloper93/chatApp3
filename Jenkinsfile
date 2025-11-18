@@ -43,11 +43,20 @@ pipeline {
             }
         }
 
-        stage('Run Migration & Start Backend') {
+       stage('Run Migration & Start Backend') {
             steps {
-                echo "⚙️ Chạy migration và start backend..."
+                echo "⚙️ Generate migration + run migration + start backend..."
                 sh '''
                     docker compose --project-name ${PROJECT_NAME} up -d backend
+
+                    echo "⏳ Đợi backend container sẵn sàng..."
+                    sleep 5
+
+                    docker exec chat-backend sh -c \
+                        "npx ts-node -r tsconfig-paths/register ./src/generate-migration.ts"
+
+                    docker exec chat-backend sh -c \
+                        "npx typeorm migration:run -d dist/data-source.js"
                 '''
             }
         }

@@ -19,6 +19,10 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/package*.json ./
 
+# COPY tsconfig.json vào container runtime
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
+COPY --from=builder /app/tsconfig.paths.json ./tsconfig.paths.json
+
 ENV NODE_ENV=production
 
-CMD ["sh", "-c", "npx ts-node -r tsconfig-paths/register ./src/generate-migration.ts && npx typeorm migration:run -d dist/data-source.js && node dist/main.js"]
+CMD ["sh", "-c", "npx ts-node -r tsconfig-paths/register ./src/generate-migration.ts && node dist/main.js"]

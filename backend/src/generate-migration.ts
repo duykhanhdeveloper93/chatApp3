@@ -16,7 +16,7 @@ export async function generateMigrationsIfNew() {
 
       try {
         execSync(
-          `npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate -d src/data-source.ts src/migrations/${migrationName}`,
+          `npx ts-node ./node_modules/typeorm/cli.js migration:generate -d src/data-source.ts src/migrations/${migrationName}`,
           { stdio: 'inherit' }
         );
       } catch (err) {

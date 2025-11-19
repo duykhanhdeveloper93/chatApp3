@@ -43,7 +43,7 @@ pipeline {
             }
         }
 
-       stage('Run Migration & Start Backend') {
+        stage('Run Migration & Start Backend') {
             steps {
                 echo "⚙️ Generate migration + run migration + start backend..."
                 sh '''
@@ -53,7 +53,7 @@ pipeline {
                     sleep 5
 
                     docker exec chat-backend sh -c \
-                        "npx ts-node -r tsconfig-paths/register ./src/generate-migration.ts"
+                        "npx ts-node ./src/generate-migration.ts"
 
                     docker exec chat-backend sh -c \
                         "npx typeorm migration:run -d dist/data-source.js"

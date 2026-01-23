@@ -2,121 +2,43 @@ version: '3.9'
 
 networks:
   chat_network:
-    driver: bridge
 
 volumes:
   mysql_data:
   redis_data:
-  rabbitmq_data:
 
 services:
   mysql:
     image: mysql:8.0
-    container_name: chat-mysql
-    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: chat_app_dev
+      MYSQL_DATABASE: chat_app
       MYSQL_USER: chat_user
       MYSQL_PASSWORD: chat_password
-    ports:
-      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    networks:
-      - chat_network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 20s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    networks: [chat_network]
 
   redis:
-    image: redis:7.0
-    container_name: chat-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - chat_network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: chat-rabbitmq
-    restart: unless-stopped
-    environment:
-      RABBITMQ_DEFAULT_USER: chat_user
-      RABBITMQ_DEFAULT_PASS: chat_password
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - chat_network
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 20s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    image: redis:7
+    networks: [chat_network]
 
   backend:
     build: ./backend
-    container_name: chat-backend
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
       DB_USERNAME: chat_user
       DB_PASSWORD: chat_password
-      DB_NAME: chat_app_dev
-      NODE_ENV: development
-      JWT_SECRET: 2f1a92a1a6d8481fb9f60e6a5e8d7f79b42e6ef6a9243c1d8d0f4f2a9c3b7d88
-      RABBITMQ_DEFAULT_USER: chat_user
-      RABBITMQ_DEFAULT_PASS: chat_password
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-      RABBITMQ_MANAGEMENT_PORT: 15672
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      DB_NAME: chat_app
     depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - chat_network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      - mysql
+    networks: [chat_network]
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks: [chat_network]

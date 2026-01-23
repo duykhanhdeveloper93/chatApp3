@@ -1,84 +1,31 @@
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        COMPOSE_FILE = 'docker-compose.yml'
-        PROJECT_NAME = 'chatapp'
-        BACKEND_DIR = 'backend'
+  stages {
+    stage('Checkout') {
+      steps {
+        git branch: 'develop',
+            url: 'https://github.com/duykhanhdeveloper93/chatApp3'
+      }
     }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                echo "📥 Lấy source code từ GitHub..."
-                git branch: 'main',
-                    url: 'https://github.com/duykhanhdeveloper93/chatApp3'
-            }
-        }
-
-        stage('Install Backend Dependencies') {
-            steps {
-                dir("${BACKEND_DIR}") {
-                    echo "📦 Cài đặt dependencies cho backend..."
-                    sh 'npm install'
-                }
-            }
-        }
-
-        stage('Start Database Services') {
-            steps {
-                echo "🐳 Khởi động MySQL, Redis, RabbitMQ..."
-                sh '''
-                    docker compose --project-name ${PROJECT_NAME} up -d mysql redis rabbitmq
-                    echo "⏳ Đợi MySQL khởi động..."
-                    sleep 20
-                '''
-            }
-        }
-
-        stage('Build Backend Image') {
-            steps {
-                echo "🛠️ Build Docker image backend..."
-                sh 'docker compose --project-name ${PROJECT_NAME} build backend'
-            }
-        }
-
-        stage('Run Migration & Start Backend') {
-            steps {
-                echo "⚙️ Generate migration + run migration + start backend..."
-                sh '''
-                    docker compose --project-name ${PROJECT_NAME} up -d backend
-
-                    echo "⏳ Đợi backend container sẵn sàng..."
-                    sleep 5
-
-                    docker exec chat-backend sh -c \
-                        "npx ts-node ./src/generate-migration.ts"
-
-                    docker exec chat-backend sh -c \
-                        "npx typeorm migration:run -d dist/data-source.js"
-                '''
-            }
-        }
-
-        stage('Start All Containers') {
-            steps {
-                echo "🚀 Khởi động toàn bộ hệ thống..."
-                sh 'docker compose --project-name ${PROJECT_NAME} up -d'
-            }
-        }
+    stage('Build & Deploy') {
+      steps {
+        sh '''
+          docker compose down
+          docker compose build
+          docker compose up -d
+        '''
+      }
     }
+  }
 
-    post {
-        always {
-            echo "🏁 Pipeline hoàn tất."
-        }
-        success {
-            echo "✅ Triển khai thành công!"
-        }
-        failure {
-            echo "❌ Triển khai thất bại — kiểm tra log."
-            sh 'docker compose --project-name ${PROJECT_NAME} down'
-        }
+  post {
+    success {
+      echo "✅ Deploy OK – DB auto sync"
     }
+    failure {
+      echo "❌ Deploy FAIL"
+    }
+  }
 }

@@ -40,6 +40,11 @@ services:
       DB_NAME: chat_app
       NODE_ENV: production
       PORT: 3000
+      JWT_SECRET: 2f1a92a1a6d8481fb9f60e6a5e8d7f79b42e6ef6a9243c1d8d0f4f2a9c3b7d88 
+      JWT_EXPIRATION: 3600  # nếu có
+      REDIS_HOST: redis     # ← Fix connect Redis đúng service
+      REDIS_PORT: 6379
+      FRONTEND_URL: http://103.77.243.178:4200
     depends_on:
       mysql:
         condition: service_healthy  # ← Quan trọng: chờ mysql healthy mới start backend

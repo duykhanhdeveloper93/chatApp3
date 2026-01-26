@@ -1,31 +1,46 @@
 pipeline {
-  agent any
+    agent any
 
-  stages {
-    stage('Checkout') {
-      steps {
-        git branch: 'develop',
-            url: 'https://github.com/duykhanhdeveloper93/chatApp3'
-      }
+    triggers {
+        // Trigger tự động từ GitHub webhook (sẽ config sau)
+        githubPush()
     }
 
-    stage('Build & Deploy') {
-      steps {
-        sh '''
-          docker compose down
-          docker compose build
-          docker compose up -d
-        '''
-      }
-    }
-  }
+    stages {
+        stage('Checkout develop') {
+            steps {
+                checkout scmGit(
+                    branches: [[name: 'develop']],
+                    userRemoteConfigs: [[url: 'https://github.com/duykhanhdeveloper93/chatApp3.git']]
+                )
+                // Optional: In branch để confirm
+                sh 'git branch --show-current'
+            }
+        }
 
-  post {
-    success {
-      echo "✅ Deploy OK – DB auto sync"
+        stage('Build & Deploy') {
+            steps {
+                dir('.') {  // Chạy ở root repo
+                    sh '''
+                        docker compose down --remove-orphans || true
+                        docker compose build --no-cache || true  # --no-cache để rebuild sạch nếu cần
+                        docker compose up -d
+                        docker compose ps  # Check status
+                    '''
+                }
+            }
+        }
     }
-    failure {
-      echo "❌ Deploy FAIL"
+
+    post {
+        always {
+            echo "Pipeline kết thúc - Check logs nếu fail"
+        }
+        success {
+            echo "✅ Deploy OK – App chatApp3 updated trên develop!"
+        }
+        failure {
+            echo "❌ Deploy FAIL – Kiểm tra console output"
+        }
     }
-  }
 }

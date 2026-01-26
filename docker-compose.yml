@@ -1,5 +1,3 @@
-# Xóa version: '3.9' hoặc để '3.8' nếu muốn
-
 networks:
   chat_network:
 
@@ -18,8 +16,9 @@ services:
       MYSQL_PASSWORD: chat_password
     volumes:
       - mysql_data:/var/lib/mysql
-    networks: [chat_network]
-    healthcheck:  # ← Thêm cái này
+    networks:
+      - chat_network
+    healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 5s
@@ -28,7 +27,27 @@ services:
 
   redis:
     image: redis:7
-    networks: [chat_network]
+    networks:
+      - chat_network
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: chat_user
+      RABBITMQ_DEFAULT_PASS: chat_password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - chat_network
+    healthcheck:  # Thêm healthcheck để backend chờ RabbitMQ ready
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     restart: unless-stopped
 
   backend:
@@ -41,43 +60,31 @@ services:
       DB_NAME: chat_app
       NODE_ENV: production
       PORT: 3000
-      JWT_SECRET: 2f1a92a1a6d8481fb9f60e6a5e8d7f79b42e6ef6a9243c1d8d0f4f2a9c3b7d88 
-      JWT_EXPIRATION: 3600  # nếu có
-      REDIS_HOST: redis     # ← Fix connect Redis đúng service
+      JWT_SECRET: 2f1a92a1a6d8481fb9f60e6a5e8d7f79b42e6ef6a9243c1d8d0f4f2a9c3b7d88
+      JWT_EXPIRATION: 3600
+      REDIS_HOST: redis
       REDIS_PORT: 6379
-
       RABBITMQ_DEFAULT_USER: chat_user
       RABBITMQ_DEFAULT_PASS: chat_password
       RABBITMQ_PORT: 5672
       RABBITMQ_MANAGEMENT_PORT: 15672
       RABBITMQ_HOST: rabbitmq
-
       FRONTEND_URL: http://103.77.243.178:4200
     depends_on:
       mysql:
-        condition: service_healthy  # ← Quan trọng: chờ mysql healthy mới start backend
-    networks: [chat_network]
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy  # Chờ RabbitMQ healthy mới start backend
+    networks:
+      - chat_network
     restart: unless-stopped
-  
-  rabbitmq:
-    image: rabbitmq:3-management  # image có management UI (port 15672)
-    environment:
-      RABBITMQ_DEFAULT_USER: chat_user
-      RABBITMQ_DEFAULT_PASS: chat_password
-    ports:
-      - "5672:5672"        # AMQP port cho backend connect
-      - "15672:15672"      # Management UI (tùy chọn, truy cập http://IP:15672)
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    networks: [chat_network]
-    restart: unless-stopped
-
 
   frontend:
     build: ./frontend
     ports:
       - "4200:80"
     depends_on:
-      - backend  # Giữ nguyên, nhưng backend phải stable trước
-    networks: [chat_network]
+      - backend
+    networks:
+      - chat_network
     restart: unless-stopped

@@ -1,4 +1,4 @@
-version: '3.9'
+# Xóa version: '3.9' hoặc để '3.8' nếu muốn
 
 networks:
   chat_network:
@@ -18,10 +18,17 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     networks: [chat_network]
+    healthcheck:  # ← Thêm cái này
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
 
   redis:
     image: redis:7
     networks: [chat_network]
+    restart: unless-stopped
 
   backend:
     build: ./backend
@@ -31,14 +38,19 @@ services:
       DB_USERNAME: chat_user
       DB_PASSWORD: chat_password
       DB_NAME: chat_app
+      NODE_ENV: production
+      PORT: 3000
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy  # ← Quan trọng: chờ mysql healthy mới start backend
     networks: [chat_network]
+    restart: unless-stopped
 
   frontend:
     build: ./frontend
     ports:
-      - "4200:80"   # ← Map port 4200 của VPS → port 80 bên trong Nginx container
+      - "4200:80"
     depends_on:
-      - backend
+      - backend  # Giữ nguyên, nhưng backend phải stable trước
     networks: [chat_network]
+    restart: unless-stopped

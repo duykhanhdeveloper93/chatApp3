@@ -44,6 +44,13 @@ services:
       JWT_EXPIRATION: 3600  # nếu có
       REDIS_HOST: redis     # ← Fix connect Redis đúng service
       REDIS_PORT: 6379
+
+      RABBITMQ_DEFAULT_USER: chat_user
+      RABBITMQ_DEFAULT_PASS: chat_password
+      RABBITMQ_PORT: 5672
+      RABBITMQ_MANAGEMENT_PORT: 15672
+      RABBITMQ_HOST: rabbitmq
+
       FRONTEND_URL: http://103.77.243.178:4200
     depends_on:
       mysql:

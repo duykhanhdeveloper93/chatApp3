@@ -6,41 +6,42 @@ import {
   UpdateDateColumn,
   ManyToMany,
   JoinTable,
-} from "typeorm"
-import { User } from "./user.entity"
-import { Permission } from "./permission.entity"
+} from "typeorm";
+import { User } from "./user.entity";
+import { Permission } from "./permission.entity";
+import { Menu } from "./menu.entity";
 
 @Entity("roles")
 export class Role {
   @PrimaryGeneratedColumn("uuid")
-  id: string
+  id: string;
 
   @Column({ unique: true })
-  name: string
+  code: string;
 
   @Column({ nullable: true })
-  description: string
+  name: string;
+
+  @Column({ nullable: true })
+  description: string;
 
   @CreateDateColumn()
-  createdAt: Date
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date
+  updatedAt: Date;
 
-  @ManyToMany(
-    () => User,
-    (user) => user.roles,
-  )
-  users: User[]
+  @ManyToMany(() => User, (user) => user.roles)
+  users: User[];
 
-  @ManyToMany(
-    () => Permission,
-    (permission) => permission.roles,
-  )
+  @ManyToMany(() => Permission, (permission) => permission.roles)
   @JoinTable({
     name: "role_permissions",
     joinColumn: { name: "roleId", referencedColumnName: "id" },
     inverseJoinColumn: { name: "permissionId", referencedColumnName: "id" },
   })
-  permissions: Permission[]
+  permissions: Permission[];
+
+  @ManyToMany(() => Menu, (menu) => menu.roles)
+  menus: Menu[];
 }

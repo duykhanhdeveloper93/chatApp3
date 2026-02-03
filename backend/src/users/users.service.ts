@@ -98,4 +98,31 @@ export class UsersService {
   async validatePassword(user: User, password: string): Promise<boolean> {
     return await bcrypt.compare(password, user.password)
   }
+
+
+  async findOrCreate(data: {
+    email: string
+    username: string
+    password: string
+    roles?: any[]
+  }): Promise<User> {
+    const exists = await this.usersRepository.findOne({
+      where: { email: data.email },
+      relations: ['roles'],
+    })
+
+    if (exists) return exists
+
+    const hashedPassword = await bcrypt.hash(data.password, 12)
+
+    const user = this.usersRepository.create({
+      email: data.email,
+      username: data.username,
+      password: hashedPassword,
+      roles: data.roles || [],
+    })
+
+    return this.usersRepository.save(user)
+  }
+
 }

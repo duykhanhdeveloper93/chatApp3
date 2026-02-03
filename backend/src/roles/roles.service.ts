@@ -63,4 +63,46 @@ export class RolesService {
     const role = await this.findOne(id)
     await this.rolesRepository.remove(role)
   }
+
+  async findByCode(code: string): Promise<Role> {
+    const role = await this.rolesRepository.findOne({
+      where: { code },
+      relations: ['permissions'],
+    })
+
+    if (!role) {
+      throw new NotFoundException(`Role with code ${code} not found`)
+    }
+
+    return role
+  }
+
+  async findOrCreate(data: {
+  code: string
+  name: string
+  permissions?: Permission[]}): Promise<Role> {
+      let role = await this.rolesRepository.findOne({
+        where: { code: data.code },
+        relations: ['permissions'],
+      })
+
+      if (role) {
+        // update permission nếu có thay đổi
+        if (data.permissions) {
+          role.permissions = data.permissions
+          role = await this.rolesRepository.save(role)
+        }
+        return role
+      }
+
+      role = this.rolesRepository.create({
+        code: data.code,
+        name: data.name,
+        permissions: data.permissions || [],
+      })
+
+      return this.rolesRepository.save(role)
+  }
+
+
 }

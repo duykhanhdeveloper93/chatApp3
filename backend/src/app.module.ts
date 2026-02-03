@@ -12,6 +12,8 @@ import { ChatModule } from "./chat/chat.module"
 import { FilesModule } from "./files/files.module"
 import { RolesModule } from "./roles/roles.module"
 import { PermissionsModule } from "./permissions/permissions.module"
+import { MenusModule } from "./menu/menus.module"
+import { SeedModule } from "./seed/seed.module"
 
 @Module({
   imports: [
@@ -63,6 +65,8 @@ import { PermissionsModule } from "./permissions/permissions.module"
     FilesModule,
     RolesModule,
     PermissionsModule,
+    MenusModule,
+    SeedModule
   ],
 })
 export class AppModule {}

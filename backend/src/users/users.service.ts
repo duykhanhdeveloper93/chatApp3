@@ -36,7 +36,7 @@ export class UsersService {
       ...createUserDto,
       password: hashedPassword,
     })
-
+    console.log
     return await this.usersRepository.save(user)
   }
 

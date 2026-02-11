@@ -155,4 +155,53 @@ export class PermissionsService {
 
     return this.permissionRepository.save(permission);
   }
+
+  /* =========================
+ * SEED DEFAULT PERMISSIONS
+ * ========================= */
+async seedDefaultPermissions(): Promise<{ message: string }> {
+  const resources = ["users", "roles", "permissions"];
+  const actions = ["create", "read", "update", "delete"];
+
+  const createdPermissions: Permission[] = [];
+
+  for (const resource of resources) {
+    for (const action of actions) {
+      const name = `${resource}:${action}`;
+
+      const existed = await this.permissionRepository.findOne({
+        where: { name },
+      });
+
+      if (!existed) {
+        const permission = this.permissionRepository.create({
+          name,
+          description: `Allow ${action} on ${resource}`,
+          resource,
+          action,
+        });
+
+        const saved = await this.permissionRepository.save(permission);
+        createdPermissions.push(saved);
+      }
+    }
+  }
+
+  // Nếu có role ADMIN thì auto gán full quyền
+  const adminRole = await this.roleRepository.findOne({
+    where: { name: "ADMIN" },
+    relations: ["permissions"],
+  });
+
+  if (adminRole) {
+    const allPermissions = await this.permissionRepository.find();
+    adminRole.permissions = allPermissions;
+    await this.roleRepository.save(adminRole);
+  }
+
+  return {
+    message: `Seed completed. Created ${createdPermissions.length} new permissions.`,
+  };
+}
+
 }

@@ -26,7 +26,7 @@ export class PermissionsController {
   @Get(":id")
   @RequirePermissions("permissions", "read")
   findOne(@Param("id", ParseUUIDPipe) id: string) {
-    return this.permissionsService.findOne(id)
+    return this.permissionsService.findById(id)
   }
 
   @Patch(":id")

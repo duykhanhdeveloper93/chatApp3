@@ -1,8 +1,16 @@
 <div class="sidebar" [class.collapsed]="collapsed">
+
   <div class="logo">
-    <span *ngIf="!collapsed">WEB LEARNING</span>
-    <span *ngIf="collapsed">WL</span>
+    <span class="logo-icon">🎓</span>
+    <span class="logo-text" *ngIf="!collapsed">
+        WEB LEARNING
+    </span>
+    <span class="logo-mini" *ngIf="collapsed">
+        WL
+    </span>
   </div>
+
+
 
   <ul class="menu">
     <li routerLink="/chat" routerLinkActive="active">
@@ -19,4 +27,5 @@
   <div class="toggle-btn" (click)="toggleSidebar()">
     {{ collapsed ? '➡' : '⬅' }}
   </div>
+
 </div>

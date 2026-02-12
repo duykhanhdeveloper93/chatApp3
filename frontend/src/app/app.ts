@@ -1,17 +1,12 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ChatSidebarComponent } from './chat-sidebar/chat-sidebar';
+import { SidebarComponent } from './sidebar/sidebar.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet,ChatSidebarComponent],   // 👈 thêm dòng này
+  standalone: true,
+  imports: [RouterOutlet, SidebarComponent],
   templateUrl: './app.html',
   styleUrls: ['./app.scss']
 })
-export class AppComponent {
-  collapsed = false;
-
-  toggleSidebar() {
-    this.collapsed = !this.collapsed;
-  }
-}
+export class AppComponent {}

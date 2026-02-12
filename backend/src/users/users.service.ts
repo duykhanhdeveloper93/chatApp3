@@ -51,7 +51,7 @@ export class UsersService {
     const user = await this.usersRepository.findOne({
       where: { id },
       relations: ["roles", "roles.permissions"],
-      select: ["id", "email", "username", "avatar", "isActive", "lastSeen", "createdAt"],
+      select: ["id", "email", "username", "avatar", "isActive", "lastSeen", "createdAt","isSystem"],
     })
 
     if (!user) {

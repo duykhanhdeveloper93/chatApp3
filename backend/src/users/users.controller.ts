@@ -13,7 +13,6 @@ export class UsersController {
   }
 
 
-
   @Get("profile")
   getProfile(@Request() req) {
     return this.usersService.findOne(req.user.id)

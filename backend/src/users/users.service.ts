@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from "@nestjs/common"
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from "@nestjs/common"
 import  { Repository } from "typeorm"
 import  { User } from "../database/entities/user.entity"
 import  { CreateUserDto } from "./dto/create-user.dto"
@@ -85,10 +85,18 @@ export class UsersService {
     return await this.usersRepository.save(user)
   }
 
+
   async remove(id: string): Promise<void> {
     const user = await this.findOne(id)
+
+    if (user.isSystem) {
+      throw new BadRequestException("Không được phép xoá system user")
+    }
+
     await this.usersRepository.remove(user)
   }
+
+  
 
   async updateLastSeen(id: string): Promise<void> {
     await this.usersRepository.update(id, { lastSeen: new Date() })

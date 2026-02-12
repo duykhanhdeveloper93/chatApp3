@@ -33,6 +33,10 @@ export class User {
 
   @Column({ default: true })
   isActive: boolean
+  
+  @Column({ type: "boolean", default: false })
+  isSystem: boolean
+
 
   @Column({ nullable: true })
   lastSeen: Date

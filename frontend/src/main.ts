@@ -4,7 +4,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { importProvidersFrom } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { routes } from './app/app.routes';
-import { App } from './app/app';
+
+import { AppComponent } from './app/app';
 
 // Import Angular Material modules
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -13,7 +14,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 
-bootstrapApplication(App, {
+bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
     provideHttpClient(),

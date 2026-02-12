@@ -124,4 +124,51 @@ export class UsersService {
     return this.usersRepository.save(user)
   }
 
+  async findAllPaginated(
+    page: number = 1,
+    limit: number = 10,
+    search?: string
+  ) {
+    const skip = (page - 1) * limit
+
+    const qb = this.usersRepository
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.roles", "roles")
+      .leftJoinAndSelect("roles.permissions", "permissions")
+      .select([
+        "user.id",
+        "user.email",
+        "user.username",
+        "user.avatar",
+        "user.isActive",
+        "user.lastSeen",
+        "user.createdAt",
+        "roles.id",
+        "roles.name",
+        "permissions.id",
+        "permissions.name",
+      ])
+
+    if (search) {
+      qb.where("user.email LIKE :search OR user.username LIKE :search", {
+        search: `%${search}%`,
+      })
+    }
+
+    qb.skip(skip).take(limit).orderBy("user.createdAt", "DESC")
+
+    const [data, total] = await qb.getManyAndCount()
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    }
+  }
+
+
 }

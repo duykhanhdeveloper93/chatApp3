@@ -1,11 +1,17 @@
-import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-chat-sidebar',
-  imports: [],
+  imports: [CommonModule],   // 👈 THÊM DÒNG NÀY
   templateUrl: './chat-sidebar.html',
-  styleUrl: './chat-sidebar.scss'
+  styleUrls: ['./chat-sidebar.scss']
 })
-export class ChatSidebar {
+export class ChatSidebarComponent {
+  @Input() collapsed = false;
+  @Output() toggle = new EventEmitter<void>();
 
+  toggleSidebar() {
+    this.toggle.emit();
+  }
 }

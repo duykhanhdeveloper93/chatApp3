@@ -1,1 +1,22 @@
-<p>chat-sidebar works!</p>
+<div class="sidebar" [class.collapsed]="collapsed">
+  <div class="logo">
+    <span *ngIf="!collapsed">WEB LEARNING</span>
+    <span *ngIf="collapsed">WL</span>
+  </div>
+
+  <ul class="menu">
+    <li routerLink="/chat" routerLinkActive="active">
+      <span>💬</span>
+      <span *ngIf="!collapsed">Chat</span>
+    </li>
+
+    <li routerLink="/users" routerLinkActive="active">
+      <span>👤</span>
+      <span *ngIf="!collapsed">Users</span>
+    </li>
+  </ul>
+
+  <div class="toggle-btn" (click)="toggleSidebar()">
+    {{ collapsed ? '➡' : '⬅' }}
+  </div>
+</div>

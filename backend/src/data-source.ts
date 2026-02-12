@@ -9,6 +9,6 @@ export const dataSource = new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   entities,
-  synchronize: true,   // ✅ AUTO CREATE / UPDATE TABLE 1
+  synchronize: false,   // ✅ AUTO CREATE / UPDATE TABLE 1
   logging: true,       // bật log cho dễ debug
 });

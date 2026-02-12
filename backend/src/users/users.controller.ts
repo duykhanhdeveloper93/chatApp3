@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request, ParseUUIDPipe } from "@nestjs/common"
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request, ParseUUIDPipe, Query } from "@nestjs/common"
 import { UsersService } from "./users.service"
 import { CreateUserDto } from "./dto/create-user.dto"
 import { UpdateUserDto } from "./dto/update-user.dto"
@@ -12,10 +12,7 @@ export class UsersController {
     return this.usersService.create(createUserDto)
   }
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll()
-  }
+
 
   @Get("profile")
   getProfile(@Request() req) {
@@ -36,4 +33,14 @@ export class UsersController {
   remove(@Param("id", ParseUUIDPipe) id: string) {
     return this.usersService.remove(id)
   }
+
+  @Get()
+  findAll(
+  @Query('page') page: number = 1,
+  @Query('limit') limit: number = 10,
+  @Query('search') search?: string,
+  ) {
+    return this.usersService.findAllPaginated(page, limit, search)
+  }
+
 }

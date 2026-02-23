@@ -34,7 +34,7 @@ import { SeedModule } from "./seed/seed.module"
         password: configService.get("DB_PASSWORD") || "",
         database: configService.get("DB_NAME") || "chat_app",
         entities: [__dirname + "/**/*.entity{.ts,.js}"],
-        synchronize: true, // ❌ tắt sync
+        synchronize: false, // ❌ tắt sync
         migrationsRun: true, // ✅ tự chạy migration khi app start
         migrations: [__dirname + '/migrations/**/*{.ts,.js}'], // ✅ trỏ tới thư mục migration
         logging: configService.get('NODE_ENV') === 'development'

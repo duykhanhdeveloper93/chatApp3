@@ -4,12 +4,14 @@ import { ConfigService } from "@nestjs/config"
 import { AppModule } from "./app.module"
 import { IoAdapter } from "@nestjs/platform-socket.io"
 import { SeedService } from "./seed/seed.service"
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService)
 
-
+ // QUAN TRỌNG KHI CHẠY SAU NGINX
+  app.set('trust proxy', 1);
 
   // Enable CORS
   app.enableCors({
